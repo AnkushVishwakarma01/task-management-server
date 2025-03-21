@@ -19,6 +19,11 @@ app.use(cors({
 }));
 
 app.use('/api', router);
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the server');
+});
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     app.listen(PORT, () => {
