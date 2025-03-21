@@ -1,9 +1,10 @@
 const Task = require('../Models/tasks');
-
+const mongoose = require('mongoose');
 // Get all tasks
 exports.getAllTasks = async (req, res) => {
   try {
-    const tasks = await Task.find();
+    const userId = req.user.id; // Assuming `req.user` contains the authenticated user's information
+    const tasks = await Task.find({ userId });
     res.status(200).json(tasks);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching tasks', error });
@@ -29,13 +30,12 @@ exports.createTask = async (req, res) => {
     const lastTask = await Task.findOne().sort({ id: -1 });
     const incrementalId = lastTask ? lastTask.id + 1 : 1;
     const { title, description } = req.body;
-    // const newTask = new Task({
-    //   id: incrementalId, 
-    //   name, 
-    //   description 
-    // });
-    // await newTask.save();
-    const newTask = await Task.create({ id: incrementalId, title, description });
+    const newTask = await Task.create({ 
+      userId: req.user.id, 
+      id: incrementalId, 
+      title, 
+      description 
+    });
     res.status(201).json(newTask);
   } catch (error) {
     console.log(error.message);
@@ -65,7 +65,7 @@ exports.updateTask = async (req, res) => {
 // Delete a task
 exports.deleteTask = async (req, res) => {
   try {
-    const deletedTask = await Task.findOneAndDelete({id: req.params.id});
+    const deletedTask = await Task.findOneAndDelete({ id: req.params.id });
     if (!deletedTask) {
       return res.status(404).json({ message: 'Task not found' });
     }
